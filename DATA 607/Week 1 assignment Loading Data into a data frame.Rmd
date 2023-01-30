@@ -1,0 +1,68 @@
+---
+title: "Week 1 assignment"
+author: "Jian Quan Chen"
+date: '`r Sys.Date()`'
+output: html_document
+---
+Article: The Complete History of the NBA (https://projects.fivethirtyeight.com/complete-history-of-the-nba/#warriors)
+
+This is a dataset that contains the elo rating of each NBA team at the end of the 2015 season. The elo rating is dependent on whether each team wins or loses, home court advantage, and the margin of each win or loss. The elo rating accounts for every game recorded since the start of the team's franchise dating back to 1946. It can be used to predict the outcome of games as the team with the higher rating is generally favored. 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+```
+
+
+```{r}
+nba_elo <- read.csv(url("https://raw.githubusercontent.com/fivethirtyeight/data/master/nba-elo/nbaallelo.csv"))
+head(nba_elo)
+```
+
+This subset contains the elo rating of each team at the end of the regular season sorted by elo rating.
+
+```{r}
+most_recent_elo <- nba_elo %>% 
+  filter(year_id >= "2015",seasongame == 82) %>% 
+  mutate(elo = round(elo_n)) %>% 
+  select(year_id,team_id,elo) %>% 
+  arrange(desc(elo))
+
+head(most_recent_elo)
+
+```
+
+This bar chart shows the elo rating of all the teams. The Golden State Warriors (GSW) ended the 2015 regular season with the highest elo rating.
+
+```{r pressure, echo=FALSE}
+most_recent_elo %>% 
+  ggplot(aes(x=team_id, y=elo))+
+  geom_bar(stat="identity", fill="steelblue")+
+  coord_flip()+
+  labs(title = "2015 Regular Season Elo Rating", x = "Team", y = "Elo Rating")+
+  geom_text(aes(label=team_id), hjust=-0.25, color="black", size=2.5)+
+  theme_classic()
+
+```
+```{r}
+finals <- nba_elo %>% 
+  filter(gameorder == max(gameorder)) %>% 
+  mutate(elo = round(elo_n)) %>% 
+  select(year_id,team_id,elo, game_result) %>% 
+  arrange(desc(elo))
+
+head(finals)
+
+```
+With the highest elo rating at the end of the regular season, GSW ended the playoffs with the highest elo rating overall. Subsequently, ending the season with a win over the Cavaliers and picking up the NBA championship. Based on the elo rating at the end of the regular season, it can be implied that the team with the highest rating is the best team and are favorites to win the championship.
+
+Ideally, I would like to implement this elo rating on more recent data. The article discussed how the 90s bulls, the 70s lakers, and the warriors had the highest rating before capturing the championsip later that year. If I was better with R, I would like to see how often the team with the highest elo rating at the end of the regular season went on to win the champsionship that year. 
+
+
+```{r}
+tail(most_recent_elo)
+```
+PS: the Knicks suck 
+
