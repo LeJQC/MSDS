@@ -1,0 +1,89 @@
+---
+title: "607 Week 2 Assignment - SQL and R"
+author: "Jian Quan Chen"
+date: "2023-02-05"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+For this assignment, I asked 5 friends to rate 6 recent popular movies on a scale of 1 to 5. I stored their answers into a MySQL database and loaded it to a R dataframe.   
+
+```{r setup, include=FALSE}
+#install.packages("RMySQL")
+library(RMySQL)
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+```
+
+#Loading Database from MySQL
+```{r}
+mydb = dbConnect(MySQL(), user='root', password='jianquan12', dbname='movie_ratings', host='localhost')
+
+dbListTables(mydb)
+```
+#Glance of each table
+```{r}
+movies <- dbGetQuery(mydb, "SELECT * FROM movies")
+head(movies)
+```
+
+```{r}
+person <- dbGetQuery(mydb, "SELECT * FROM person")
+head(person)
+```
+
+```{r}
+rating <- dbGetQuery(mydb, "SELECT * FROM rating")
+head(rating)
+```
+
+#Dataframe that contains all the relevant information
+```{r}
+df <- dbGetQuery(mydb,"
+SELECT movie_name,person_name AS person,rating
+FROM person p
+LEFT JOIN rating r
+	ON p.person_id = r.person_id
+LEFT JOIN movies m
+	ON m.movie_id = r.movie_id
+ORDER BY movie_name")
+
+head(df)
+```
+#Removing missing values and find the mean of each movie 
+```{r}
+df_mean <- df %>% 
+  group_by(movie_name) %>% 
+  na.omit(df) %>% 
+  mutate(average_rating = mean(rating)) %>% 
+  arrange(desc(average_rating))
+
+head(df_mean)
+ 
+```
+
+#Plotting the information
+```{r}
+df_mean %>% 
+  ggplot(aes(x=rating, y=person)) + 
+  geom_point(size = 2, alpha= 0.5)+
+  geom_point(aes(x= average_rating), colour="blue")+
+  facet_wrap(~movie_name)+
+  theme_bw()+
+  labs(title = "Friends' Rating on Popular Movies", x = "Rating", y = "Person")
+
+```
+```{r}
+df_mean %>% 
+  ggplot(aes(x=rating, y=movie_name)) + 
+  geom_boxplot()+
+  geom_point(aes(colour=person), size = 4, alpha = 0.5)+
+  theme_bw()+
+  labs(title = "Friends' Rating on Popular Movies", x = "Rating", y = "Movie")
+```
+#Conclusion
+
+All 5 people watched Avatar, Top Gun, and Blank Panther. However, only 2 people watched Puss in Boots. Avatar and Glass Onion had the highest average rating at 4.0 while Black Panther had the lowest rating at 2.6. The sample size is too small to determine which movie was best as one rating from Jessica plummeted the average rating of Top Gun. When asked why Jessica gave Top Gun such a low rating, she responded "I hate Tom Cruise's face", which I find hard to disagree with. 
+
