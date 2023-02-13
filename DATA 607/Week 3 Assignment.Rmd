@@ -1,0 +1,131 @@
+---
+title: "Week 3 Assignment2"
+author: "Jian Quan Chen"
+date: "2023-02-12"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### 1. Using the 173 majors listed in fivethirtyeight.com’s College Majors dataset [https://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/], provide code that identifies the majors that contain either "DATA" or "STATISTICS"
+
+There are 3 majors that contain either "DATA" or "STATISTICS": "MANAGEMENT INFORMATION SYSTEMS AND STATISTICS", "COMPUTER
+PROGRAMMING AND DATA PROCESSING", and "STATISTICS AND DECISION SCIENCE"
+
+```{r}
+df = read.csv(file = "https://raw.githubusercontent.com/fivethirtyeight/data/master/college-majors/majors-list.csv")
+print(grep(('data|statistics'), df$Major,value=TRUE, ignore.case = TRUE))
+```
+
+### 2. Write code that transforms the data below:
+
+[1] "bell pepper"  "bilberry"     "blackberry"   "blood orange"
+[5] "blueberry"    "cantaloupe"   "chili pepper" "cloudberry"  
+[9] "elderberry"   "lime"         "lychee"       "mulberry"    
+[13] "olive"        "salal berry"
+Into a format like this:
+c("bell pepper", "bilberry", "blackberry", "blood orange", "blueberry", "cantaloupe", "chili pepper", "cloudberry", "elderberry", "lime", "lychee", "mulberry", "olive", "salal berry")
+
+
+#My attempt before I saw the message on slack. Converted it to a factor vector to resemble what the first format looked like and then converted it to a character vector.
+
+```{r}
+fruits <- c("bell pepper", "bilberry", "blackberry", "blood orange","blueberry", "cantaloupe", 
+            "chili pepper", "cloudberry", "elderberry", "lime", "lychee", "mulberry",
+            "olive", "salal berry")
+
+fruits_factor <- factor(fruits)
+
+factor_to_char <- function(x) {
+  paste("c(", paste(paste("\"", as.character(x), "\""), collapse = ", "), ")", sep = "")
+}
+
+fruits_char <- factor_to_char(fruits_factor)
+cat(fruits_char) #close enough
+
+```
+
+#My attempt after I saw the message on slack. Both have the same outcome.
+
+```{r}
+strStart = '[1] "bell pepper" "bilberry"   "blackberry"  "blood orange"
+[5] "blueberry"  "cantaloupe"  "chili pepper" "cloudberry"
+[9] "elderberry"  "lime"     "lychee"    "mulberry"
+[13] "olive"    "salal berry"'
+
+convert_string_to_vector <- function(strStart) {
+  fruits_raw <- gsub("\\[\\d+\\]", "", strStart)
+  fruits_raw <- trimws(unlist(strsplit(fruits_raw, "\""))) 
+  fruits_raw <- fruits_raw[fruits_raw != ""]
+  fruits <- paste("\"", fruits_raw, "\"", collapse = ", ")
+  cat(paste0("c(", fruits, ")"))
+}
+
+convert_string_to_vector(strStart)
+```
+
+The two exercises below are taken from R for Data Science, 14.3.5.1 in the on-line version:
+
+### 3. Describe, in words, what these expressions will match:
+
+  1. "(.)\1\1": This expression does not yield a result but if it was (.)\\1\\1 then it would search for three of the same characters such as ‘aaa’ or ‘bbb’
+
+```{r}
+exer_3 <- c('banana', 'daaa', 'bbb', 'abcd', 'abba', 'sbbsb', '444','32323', '1234321', 'abcddcba', 'church','eleven')
+
+str_subset(exer_3, "(.)\1\1")
+```
+
+```{r}
+str_subset(exer_3, "(.)\\1\\1")
+```  
+  
+  2. "(.)(.)\\2\\1": This would search for 4 characters. The last two characters are the reverse of the first two like a mirror between the first two letters. So “abba” or “1221”.
+
+```{r}
+str_subset(exer_3, "(.)(.)\\2\\1")
+```
+  
+  3. "(..)\1": This does not yield any results but if it was (..)\\1, it would search for two characters followed by the same two characters. For example: “coco” or “banana”
+  
+```{r}
+str_subset(exer_3, "(..)\\1")
+```
+  
+  4. "(.).\\1.\\1": This expression searches for five characters, where the first, third, and fifth characters are the same such as “banana” or “12121”. The second and fourth character can be anything.
+
+```{r}
+str_subset(exer_3, "(.).\\1.\\1")
+```
+
+  5. "(.)(.)(.).*\\3\\2\\1": This expression searches for 7 or more characters. The last three characters are the reverse of the first three characters like “1234321” or “abcdcda”
+  
+```{r}
+str_subset(exer_3,"(.)(.)(.).*\\3\\2\\1")
+```
+
+### 4. Construct regular expressions to match words that:
+
+  1. Start and end with the same character: "^(.).*\\1$"
+
+```{r}
+str_subset(exer_3,"^(.).*\\1$")
+```
+
+  2. Contain a repeated pair of letters (e.g. "church" contains "ch" repeated twice.):".*([A-Za-z][A-Za-z]).*\\1.*"
+
+```{r}
+str_subset(exer_3,".*([A-Za-z][A-Za-z]).*\\1.*")
+```
+  
+  3. Contain one letter repeated in at least three places (e.g. "eleven" contains three "e"s.): ".*([A-Za-z]).*\\1.*\\1.*"
+  
+```{r}
+str_subset(exer_3,".*([A-Za-z]).*\\1.*\\1.*")
+
+```
