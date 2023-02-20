@@ -1,0 +1,129 @@
+---
+title: "Project 1"
+author: "Jian Quan Chen"
+date: "2023-02-13"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+In this project, you're given a text file with chess tournament results where the information has some structure. Your job is to create an R Markdown file that generates a .CSV file (that could for example be imported into a SQL database) with the following information for all of the players:
+
+Player's Name, Player's State, Total Number of Points, Player's Pre-Rating, and Average Pre Chess Rating of Opponents
+
+###Loading the text file into Github. From there I converted it to a readable data frame. I skipped the first 4 rows as it was not necessary for my analysis. My plan for the assignment was to create a dataframe for each of the information needed and pasting it together at the end.
+
+```{r}
+library(tidyverse)
+
+url <- "https://raw.githubusercontent.com/LeJQC/MSDS/main/DATA%20607/Project%201/tournamentinfo.txt"
+df <- read.csv(url,header = FALSE, sep = "|", skip = 4)
+view(df)
+```
+
+###Creating a data frame for each player
+
+```{r}
+#Checking the V2 column which contains all the names of the players
+head(df$V2,20)
+#Cleaning the data and searching for 2 consecutive capital letters 
+trim_df2 <- str_trim(df$V2)
+player_names <-grep("[A-Z][A-Z]", trim_df2, value = TRUE)
+#Data frame has 1 column, 64 rows
+glimpse(player_names)
+```
+
+###Creating a data frame for each state
+
+```{r}
+head(df$V1,20)
+#Same as before but with the V1 column that contains the 2 letter state
+states <- str_trim(grep("[A-ZA-Z]",df$V1, value = TRUE))
+#Data frame has 1 column, 64 rows
+glimpse(states)
+```
+
+#Creating a data frame for total points of each player
+
+```{r}
+head(df$V3,20)
+#Searching the V3 column for a digit followed by a dot followed by another digit
+total_points <- str_trim(grep("\\d(.)\\d",df$V3, value = TRUE))
+#Data frame has 1 column, 64 rows
+glimpse(total_points)
+```
+
+#Creating a data frame for player's prerating
+
+```{r}
+#The prerating is in the same column as the player name which we used before
+head(trim_df2,20)
+#Searching for the "R: 1794" pattern
+r_rating <- grep("R:\\s+\\d+", trim_df2, value = TRUE)
+#Data frame has 1 column, 64 rows but there is other stuff I don't need
+glimpse(r_rating)
+#Positive lookbehind: Matching digit only if preceded by R with 1 or 2 spaces to account for 3 and 4 digit ratings
+pre_rating <- str_extract(r_rating, "(?<=R: )\\d+|(?<=R:  )\\d+")
+#This data frame just has the 64 ratings
+glimpse(pre_rating)
+```
+
+###Checking how the data looks so far
+
+```{r}
+player_data4 <- data.frame(player_names, states, total_points, pre_rating)
+head(player_data4,20)
+```
+
+#Getting the opponents from each round
+
+```{r}
+#Used a for loop to iterate over the orginial data frame(df) starting from column 4 to 10.
+for (i in 4:10) {
+  #Searched for 5 spaces or a pattern ending in a digit
+  col_values <- str_subset(df[[i]], pattern = "     |([0-9]$)")
+  #Replaced 5 spaces with na value
+  col_plus_na <- str_replace_all(col_values, "     ", "NA")
+  #Replaced the W,L,or D with spaces and trimmed it. Saved it as a column
+  col_clean <- as.vector(as.numeric(str_trim(str_replace_all(col_plus_na, "W|L|D", ""))))
+  #Assigning the values to columns named round_1 to round_7
+  assign(paste0("round_", i-3), col_clean)
+}
+#Manually combining the all the data frames. Tried appending the rounds in the for loop but it kept giving me an error
+rounds <- cbind(player_data4,round_1,round_2,round_3,round_4,round_5,round_6,round_7)
+head(rounds,20)
+```
+
+###Finding Average Pre Chess Rating of Opponents
+
+```{r}
+#Created a list with 64 rows
+prematch_ratings <- vector("list", nrow(rounds))
+#Iterating over the 64 rows
+for (i in 1:nrow(rounds)) {
+  current_ratings <- c()
+  #Row 1, Fifth column = 39 
+  for (k in 5:11) {
+    opponent <- rounds[i,k]
+    #Appending prerating of opponent 39 to current ratings vector
+    if (!is.na(opponent)) {
+      current_ratings <- c(current_ratings, pre_rating[opponent])
+    }
+  }
+  #Storing the rating in a list 
+  prematch_ratings[[i]] <- as.numeric(current_ratings)
+}
+head(prematch_ratings)
+mean_ratings <- sapply(prematch_ratings, mean)
+rounds$opponent_avg_rating <- round(mean_ratings)
+head(rounds,20)
+```
+
+###Selecting the columns and importing to csv
+
+```{r}
+chess_tour <- rounds %>% 
+  select(player_names, states, total_points, pre_rating, opponent_avg_rating)
+head(chess_tour,20)
+write.csv(chess_tour, file = "Chess Project.csv", row.names = FALSE)
+```
