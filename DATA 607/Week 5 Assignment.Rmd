@@ -1,0 +1,105 @@
+---
+title: "Week 5 Assignment"
+author: "Jian Quan Chen"
+date: "2023-02-26"
+output:
+  html_document: default
+  pdf_document: default
+---
+For this assignment, I had to transform a wide table into a long table and analyze the data. Converting the wide dataset of airline information to a long dataset was simple with the pivot_longer function in tidyr. Initially, I plotted the data to see if anything stood out. Afterwards, I mutated the dataframe to look at the percentage of delayed flights from each airline. Then I plotted the percentage of delayed flights by city to see if there were any trends.
+
+```{r}
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+```
+
+#Created a csv in excel and uploaded it to github. Saved it as a dataframe(df)
+```{r}
+df <- read.csv("https://raw.githubusercontent.com/LeJQC/MSDS/main/DATA%20607/week%205%20flights.csv")
+
+df
+```
+
+#Added some values and column names to df
+```{r}
+df[2,1] <- "ALASKA"
+df[5,1] <- "AM WEST"
+colnames(df) <- c("Airline", "Status", "Los Angeles", "Pheonix", "San Diego", "San Francisco", "Seattle")
+
+df
+```
+
+#Used the pivot_longer function in tidyr to convert wide data into long data
+```{r}
+df_long <- df %>% 
+  pivot_longer(
+    cols = c("Los Angeles", "Pheonix", "San Diego", "San Francisco", "Seattle"),
+    names_to = "City",
+    values_to = "Value",
+    values_drop_na = TRUE) %>% 
+  select("Airline", "City", "Status", "Value") %>% 
+  arrange(City, Status)
+
+df_long
+```
+
+#Wanted to get a general sense of the data by plotting it. Looks like Phenoix has the largest amount of on time flights. 
+```{r}
+df_long %>% 
+  ggplot(aes(x= City, y = Value, fill = Status))+
+  facet_wrap(~Airline)+
+  geom_bar(stat = "identity", position = "dodge")+
+  labs(title = "Airline Delays", x = "City", y = "Count")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+###Analysis to compare the arrival delays for the two airlines
+
+#Calculating the percentage of delayed flights on ALASKA airline
+```{r}
+df_delayed_alaska <- df_long %>% 
+  filter(Airline == "ALASKA") %>% 
+  mutate(total_flights = sum(Value)) %>% 
+  filter(Status == "delayed") %>% 
+  mutate(pct_flight_delay = sum(Value)/total_flights*100)
+
+df_delayed_alaska
+```
+
+#Calculating the percentage of delayed flights on AM WEST airline
+```{r}
+df_delay_am <- df_long %>% 
+  filter(Airline == "AM WEST") %>% 
+  mutate(total_flights = sum(Value)) %>% 
+  filter(Status == "delayed") %>% 
+  mutate(pct_flight_delay = sum(Value)/total_flights*100)
+
+df_delay_am
+```
+
+#Finding the percentage of delayed flights by city and airline
+```{r}
+df_delay_city <- df_long %>% 
+  group_by(City,Airline) %>% 
+  mutate(total_flights_city = sum(Value)) %>% 
+  mutate(pct_delay_city = Value/total_flights_city*100)
+
+df_delay_city
+```
+
+```{r}
+df_delay_city %>% 
+  filter(Status == "delayed") %>% 
+  ggplot(aes(x= City, y = pct_delay_city, fill = Airline))+
+  geom_bar(stat = "identity", position = "dodge")+
+  labs(title = "Airline Delays by percentage", x = "City", y = "Percent Delayed")+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+Conclusion:
+AM West airline had more flights at 7225 compared to Alaska Airlines at 3775. Even though they had almost double the number of flights as Alaska Airlines, AM West (10%) had a lower overall percentage of delayed flights than Alaska Airlines (13%).
+
+However, if I were to compare the percentage of delays in each city, Alaska Airlines has a lower percentage of delayed flights in each city compared to AM West.
+
+The reason AM West airline has a lower overall percentage of delayed flights is because Phoenix has almost 5,000 flights that were on time.
