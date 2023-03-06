@@ -1,15 +1,15 @@
 ---
-title: "project2_gasoline"
+title: "Project 2_gasprices"
 author: "Jian Quan Chen"
 date: "2023-03-05"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
   This dataset is from Susanna Wong's week 5 discussion. The dataset shows gasoline prices for 17 regions in New York from 2017 to present. For analysis: "Create a line graph to view the trend or compare the prices of the gasoline for each region. We can view if the prices increases or decreases overall"
 
-```{r setup, include=FALSE}
+```{r}
 library(tidyverse)
 ```
 
@@ -32,6 +32,7 @@ head(df_long)
 
 #Cleaning up the data
 ```{r}
+#Removing ".Average....gal" and then the replace the periods with spaces
 df_long$Region <- gsub(".Average....gal.", "",df_long$Region)
 df_long$Region <- gsub("\\.", " ",df_long$Region)
 

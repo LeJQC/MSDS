@@ -3,13 +3,13 @@ title: "Project 2_healthcare"
 author: "Jian Quan Chen"
 date: "2023-03-05"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
   This dataset is from my Week 5 discussion. It looked at the employment and salaries of healthcare employees from 2000 to 2020. My analysis was to see if there was a trend between healthcare employment and wages.
 
-```{r setup, include=FALSE}
+```{r}
 library(tidyverse)
 ```
 
@@ -25,9 +25,11 @@ df_employment <- df %>%
 years <- c("Occupation",2000,2005,2009,2010,2015,2016,2020)
 colnames(df_employment) <- years
 
+#Cleaning up the non-values
 df_employment <- df_employment %>% 
   filter(`2020` >= 0)
 
+#Getting rid of the footnotes
 df_employment$Occupation <- gsub("\\\\[345]", "", df_employment$Occupation)
 head(df_employment)
 ```
@@ -45,9 +47,11 @@ df_long <- df_employment %>%
 #Calculating the employment rate of change from 2000 to 2020
 ```{r}
 df_long_growth <- df_long %>% 
+  #Converting Employment column from char to numeric
   mutate(Employment = as.numeric(gsub(",", "", Employment)))%>% 
   filter(Year == 2000 | Year == 2020) %>% 
   group_by(Occupation) %>% 
+  #There were a couple of occupations that were not around in 2000
   filter(n_distinct(Year) == 2) %>% 
   mutate(pct_rate_change = round(((Employment[Year == 2020] - Employment[Year == 2000]) / Employment[Year == 2000]) * 100)) %>% 
   arrange(desc(pct_rate_change)) %>%
@@ -90,7 +94,7 @@ df_salary_top$`2016` <- as.numeric(df_salary_top$`2016`)
 
 df_salary_top
 ```
-#Converting dataframe to long data
+#Converting the salary dataframe to long data
 ```{r}
 df_long_salary <- df_salary_top %>% 
   pivot_longer(
