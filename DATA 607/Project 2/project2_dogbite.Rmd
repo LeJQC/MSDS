@@ -1,0 +1,97 @@
+---
+title: "Project2_dog_bite"
+author: "Jian Quan Chen"
+date: "2023-03-05"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+  This dataset is from Gregg Maloy's Week 5 discussion on NYC dog bites data. "A possible analysis using this data would be bites per zip code, bites per breed and whether the dog was spayed or not." Although the data is in wide format, I can perform the analysis just by manupilating the dataframe and without converting it to long format.   
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+1) Bites per zipcode
+
+#Importing the CSV
+```{r}
+df <- read.csv("https://raw.githubusercontent.com/LeJQC/MSDS/main/DATA%20607/Project%202/DOHMH_Dog_Bite_Data.csv",na.strings = c("","N/A"))
+head(df)
+```
+
+#Filtering and grouping the dataset by zipcode
+```{r}
+zipcode_filtered <- df %>%
+  group_by(ZipCode) %>%
+  summarise(count = n()) %>% 
+  filter(ZipCode >=0)
+
+head(zipcode_filtered)  
+```
+#Sorting the count to show the zipcodes with the most dog bites
+```{r}
+zipcode_filtered %>% 
+  arrange(desc(count))
+#Oddly enough...I work in this neighborhood
+```
+
+#Dog bites by borough
+```{r}
+table(df$Borough)
+```
+
+2) Bites by breed
+
+#Filtering and grouping the dataset by breed
+```{r}
+breed_filtered <- df %>% 
+  group_by(Breed) %>%
+  summarise(count = n()) %>% 
+  na.omit() %>% 
+  arrange(desc(count))
+breed_filtered  
+```
+
+```{r}
+breed_filtered <- breed_filtered[breed_filtered$Breed != "UNKNOWN",]
+breed_filtered <- head(breed_filtered,20)
+breed_filtered
+```
+
+```{r}
+breed_filtered %>% 
+  ggplot(aes(x=Breed, y=count))+
+  geom_bar(stat = "identity", position = "dodge")+
+  coord_flip()+
+  labs(title = "Dog Bites by Breed", y = "Amount of Dog Bites")+
+  theme_bw()
+
+```
+3) Bites by Spay
+
+#Filtering and grouping the dataset by Spay/Neuter
+```{r}
+spray_filtered <- df %>% 
+  group_by(SpayNeuter) %>%
+  summarise(count = n()) %>% 
+  arrange(desc(count))
+
+spray_filtered
+```
+
+```{r}
+spray_filtered %>% 
+  ggplot(aes(x=SpayNeuter, y=count))+
+  geom_bar(stat = "identity", position = "dodge")+
+  labs(title = "Bites by Neuter")+
+  theme_bw()
+```
+
+1) Bites by zipcode: Queens has the most dog bites at 5773 but more dog bites were reported in zipcode 10029, which is in Manhattan.
+2) Bites by breed: Dog bites by pitbulls are staggeringly larger than the other dogs. There are about 22000 dog bites reported and 4000 of them came from pitbulls. 
+3) Bites by spay/neuter: About triple the amount of dog bites were inflicted by dogs who were not spay/neutered. 
+
+Key point: Stay away from unspayed/neutered pitbulls in East Harlem. 
+

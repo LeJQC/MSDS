@@ -1,0 +1,137 @@
+---
+title: "Project 2_healthcare"
+author: "Jian Quan Chen"
+date: "2023-03-05"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+  This dataset is from my Week 5 discussion. It looked at the employment and salaries of healthcare employees from 2000 to 2020. My analysis was to see if there was a trend between healthcare employment and wages.
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+#Importing the CSV
+```{r cars}
+df <- read.csv("https://raw.githubusercontent.com/LeJQC/MSDS/main/DATA%20607/Project%202/healthcare%20salary.csv",skip = 4, header = TRUE, stringsAsFactors = FALSE)
+head(df)
+```
+#Just getting employment data
+```{r}
+df_employment <- df %>% 
+  select(seq(1,8))
+years <- c("Occupation",2000,2005,2009,2010,2015,2016,2020)
+colnames(df_employment) <- years
+
+df_employment <- df_employment %>% 
+  filter(`2020` >= 0)
+
+df_employment$Occupation <- gsub("\\\\[345]", "", df_employment$Occupation)
+head(df_employment)
+```
+#Converting the table into long format
+```{r}
+df_long <- df_employment %>% 
+  pivot_longer(
+    cols = seq(2,8),
+    names_to = "Year",
+    values_to = "Employment",
+    values_drop_na = TRUE) %>% 
+  filter(Employment >= 0)
+```
+
+#Calculating the employment rate of change from 2000 to 2020
+```{r}
+df_long_growth <- df_long %>% 
+  mutate(Employment = as.numeric(gsub(",", "", Employment)))%>% 
+  filter(Year == 2000 | Year == 2020) %>% 
+  group_by(Occupation) %>% 
+  filter(n_distinct(Year) == 2) %>% 
+  mutate(pct_rate_change = round(((Employment[Year == 2020] - Employment[Year == 2000]) / Employment[Year == 2000]) * 100)) %>% 
+  arrange(desc(pct_rate_change)) %>%
+  filter(Year == 2020) %>% 
+  select("Occupation","pct_rate_change")
+```
+
+#Plotting the rate of change
+```{r}
+df_long_growth %>%
+  ggplot(aes(x = Occupation, y = pct_rate_change)) +
+  geom_bar(stat = "identity") +
+  coord_flip()+
+  theme_minimal()+
+  labs(title = "Employment Percentage change from 2000 to 2020", y = "Percent change")
+```
+#Taking the 10 occupations with the highest rate of change
+  I did all of them at first but the graphs were really congested and I could not get any information out of it
+```{r}
+top_10 <- head(df_long_growth,10)
+
+top_10_occupation <- top_10[1]
+top_10_occupation
+```
+#Creating a dataframe with the salary information and joining it with the top 10 occupations by employment growth
+```{r}
+df_salary <- df[c(1,9:15)]
+colnames(df_salary) <- years
+df_salary$Occupation <- gsub("\\\\[345]", "", df_salary$Occupation)
+
+df_salary_top <- semi_join(df_salary, top_10_occupation, by = "Occupation")
+
+#Had to manually convert these to numeric so I can use pivot_longer
+df_salary_top$`2000` <- as.numeric(df_salary_top$`2000`)
+df_salary_top$`2005` <- as.numeric(df_salary_top$`2005`)
+df_salary_top$`2010` <- as.numeric(df_salary_top$`2010`)
+df_salary_top$`2009` <- as.numeric(df_salary_top$`2009`)
+df_salary_top$`2015` <- as.numeric(df_salary_top$`2015`)
+df_salary_top$`2016` <- as.numeric(df_salary_top$`2016`)
+
+df_salary_top
+```
+#Converting dataframe to long data
+```{r}
+df_long_salary <- df_salary_top %>% 
+  pivot_longer(
+    cols = seq(2,8),
+    names_to = "Year",
+    values_to = "Salary",
+    values_drop_na = TRUE)
+df_long_salary
+```
+
+#Plotting the Salary by year
+```{r}
+df_long_salary %>% 
+  ggplot(aes(x=Year, y= Salary, color=Occupation))+
+  geom_point()+
+  geom_line(aes(group=Occupation))
+```
+#Calculating percentage change of salary 
+```{r}
+df_salary_change <- df_long_salary %>% 
+  filter(Year == 2000 | Year == 2020) %>% 
+  group_by(Occupation) %>% 
+  mutate(pct_salary_change = round(((Salary[Year == 2020] - Salary[Year == 2000]) / Salary[Year == 2000]) * 100)) %>% 
+  filter(Year == 2020) %>% 
+  arrange(desc(pct_salary_change)) %>% 
+  select("Occupation","pct_salary_change")
+
+df_salary_change
+```
+#Joining that dataframe with the employment growth dataframe
+```{r}
+df_change <- left_join(df_salary_change, df_long_growth, by = "Occupation")
+df_change
+```
+#Plotting the results
+```{r}
+df_change %>% 
+  ggplot(aes(x= pct_rate_change, y=pct_salary_change, color = Occupation))+
+  geom_point(size = 5)+
+  theme_bw()+
+  labs(title= "Employment Growth vs. Salary Change", x = "Employment Growth (%)", y= "Salary Growth (%)")
+```
+
+Of the 10 occupations with the highest rate of growth from 2000 to 2020, physician assistants have the highest salary increase. Surprisingly, massage therapists, who have the highest employment growth rate, had the least amount of salary growth. It doesn't look like there is a trend between employment growth and salary growth. However,on the bright side, every occupation's salary has grown within the past 20 years.

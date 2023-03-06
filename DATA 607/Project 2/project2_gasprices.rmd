@@ -1,0 +1,68 @@
+---
+title: "project2_gasoline"
+author: "Jian Quan Chen"
+date: "2023-03-05"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+  This dataset is from Susanna Wong's week 5 discussion. The dataset shows gasoline prices for 17 regions in New York from 2017 to present. For analysis: "Create a line graph to view the trend or compare the prices of the gasoline for each region. We can view if the prices increases or decreases overall"
+
+```{r setup, include=FALSE}
+library(tidyverse)
+```
+
+#Importing the CSV and converting Date to datetime format
+```{r}
+df <- read.csv("https://raw.githubusercontent.com/LeJQC/MSDS/main/DATA%20607/Project%202/Gasoline_Retail_Prices_Weekly_Average_by_Region__Beginning_2007.csv")
+
+df$Date <- as.Date(df$Date,format ="%m/%d/%Y")
+head(df)
+```
+#Converting data to a long format
+```{r}
+df_long <- df %>% 
+  pivot_longer(
+    cols = -Date,
+    names_to = "Region",
+    values_to = "Average Price per gallon") 
+head(df_long)
+```
+
+#Cleaning up the data
+```{r}
+df_long$Region <- gsub(".Average....gal.", "",df_long$Region)
+df_long$Region <- gsub("\\.", " ",df_long$Region)
+
+head(df_long)
+```
+
+#Looking just at Albany to see if everything is good so far
+```{r}
+df_long %>% 
+  subset(Region == "Albany") %>% 
+  ggplot(aes(x=Date, y= `Average Price per gallon`))+
+  geom_point()
+```
+
+#Plotting all the Regions individually with a line graph
+```{r}
+df_long %>%
+  ggplot(aes(x=Date, y=`Average Price per gallon`, color=Region),na.rm = TRUE)+
+  geom_line(na.rm = TRUE)+
+  facet_wrap(~Region)
+```
+
+#Plotting all the regions on top of each other
+```{r}
+df_long %>%
+  ggplot(aes(x=Date, y=`Average Price per gallon`, color=Region),na.rm = TRUE)+
+  #geom_point(size = 0.5, alpha = 0.5,na.rm = TRUE)+
+  geom_line(na.rm = TRUE)+
+  theme_bw()+
+  labs(title = "Average Gas Prices of 17 Regions in NY", y = "Average Price per Gallon")
+  
+```
+
+  Looking at the graph, the average gas prices of each region is pretty similar. They all follow the same ups and and downs. Right before 2010, all the gas prices seem to have fell significantly. This was probably due to the 2008 market crash. All the gas prices seem to rise quickly right after 2020, this could be attributed to everyone going back to work after the COVID pandemic. However, there is no obvious trend that I can see. 
