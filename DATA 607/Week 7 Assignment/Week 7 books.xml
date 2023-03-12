@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <catalog>
 	<book id="bk101">
-		
 		<title>Data Science for Business</title>
 		<authors>Foster Provost</authors>
 		<authors2>Tom Fawcett</authors2>
