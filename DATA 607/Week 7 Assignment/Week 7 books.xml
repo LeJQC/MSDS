@@ -13,12 +13,11 @@
 		<authors2>Garret Grolemund</authors2>
 		<interesting_attributes>Provides step by step instructions and code examples</interesting_attributes>
 		<interesting_attributes2>Covers a wide range of R packages</interesting_attributes2>
-	</book2
+	</book>
 	<book id="bk103">
 		<title>Python for Data Analysis</title>
 		<authors>Wes McKinney</authors>
 		<authors2>N/A</authors2>
 		<interesting_attributes>Available online for free</interesting_attributes>
 		<interesting_attributes2>Written by the creator of Pandas Library</interesting_attributes2>
-	</book3>
-</books>
+	</book>
