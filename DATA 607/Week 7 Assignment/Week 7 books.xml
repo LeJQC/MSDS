@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<books>
+	<book1>
+		<title>Data Science for Business</title>
+		<authors>Foster Provost</authors>
+		<authors2>Tom Fawcett</authors2>
+		<interesting_attributes>Conversational style make it an easy read.</interesting_attributes>
+		<interesting_attributes2>Cover a wide range of topics</interesting_attributes2>
+	</book1>
+	<book2>
+		<title>Data Science for Data Science</title>
+		<authors>Hadley Wickham</authors>
+		<authors2>Garret Grolemund</authors2>
+		<interesting_attributes>Provides step by step instructions and code examples</interesting_attributes>
+		<interesting_attributes2>Covers a wide range of R packages</interesting_attributes2>
+	</book2>
+	<book3>
+		<title>Python for Data Analysis</title>
+		<authors>Wes McKinney</authors>
+		<authors2>N/A</authors2>
+		<interesting_attributes>Available online for free</interesting_attributes>
+		<interesting_attributes2>Written by the creator of Pandas Library</interesting_attributes2>
+	</book3>
+</books>

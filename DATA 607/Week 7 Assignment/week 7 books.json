@@ -1,0 +1,23 @@
+[
+    {
+      "title": "Data Science for Business",
+      "authors": "Foster Provost",
+      "authors2": "Tom Fawcett",
+      "interesting attributes": "Conversational style make it an easy read.",
+      "interesting attributes2": "Cover a wide range of topics"
+    },
+    {
+      "title": "Data Science for Data Science",
+      "authors": "Hadley Wickham",
+      "authors2": "Garret Grolemund",
+      "interesting attributes": "Provides step by step instructions and code examples",
+      "interesting attributes2": "Covers a wide range of R packages"
+    },
+    {
+      "title": "Python for Data Analysis",
+      "authors": "Wes McKinney",
+      "authors2": "N/A",
+      "interesting attributes": "Available online for free",
+      "interesting attributes2": "Written by the creator of Pandas Library"
+    }
+  ]
