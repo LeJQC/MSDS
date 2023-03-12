@@ -1,0 +1,84 @@
+---
+title: 'Week 7 Assignment: Working with XML and JSON in R'
+author: "Jian Quan Chen"
+date: "2023-03-12"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+For this week's assignment, I had to pick three books and store their information into a HTML, XML, and JSON format. Then, load the three files into R data frames. I can't remember the last time I picked up a book so I just picked three data science books I came across in the past year. Through several youtube videos, I created three files using Visual Studio Code and uploaded them to Github.
+
+# Loading the Libraries
+
+```{r setup, message=FALSE}
+library(tidyverse)
+library(rvest)
+library(XML)
+library(xml2)
+library(jsonlite)
+```
+
+# Importing file from Github - HTML
+
+```{r}
+html <- read_html("https://raw.githubusercontent.com/LeJQC/MSDS/main/DATA%20607/Week%207%20Assignment/Week7%20books.html")
+```
+
+### Converting the HTML into a R dataframe
+
+```{r}
+#From the rvest library -> parsing a HTML table into a data frame
+df_html <- html_table(html)
+df_html <- df_html[[1]]
+knitr:: kable(df_html)
+```
+
+# Importing file from Github - XML
+
+```{r}
+#From the xml2 library
+xml_file <- read_xml("https://raw.githubusercontent.com/LeJQC/MSDS/main/DATA%20607/Week%207%20Assignment/Week%207%20books.xml")
+```
+
+### Converting XML to R data frame
+
+```{r}
+#Had to parse xml file before I could use the function xmltoDataFrame()
+xml_parse <- xmlParse(xml_file)
+#From the XML library
+df_xml <- xmlToDataFrame(xml_parse)
+knitr:: kable(df_xml)
+```
+
+# Importing file from Github - JSON
+
+```{r}
+json_file <- fromJSON("https://raw.githubusercontent.com/LeJQC/MSDS/main/DATA%20607/Week%207%20Assignment/week%207%20books.json")
+```
+
+### Converting JSON to R dataframe
+
+```{r}
+df_json <- as.data.frame(json_file)
+knitr:: kable(df_json)
+```
+
+# Conclusion
+
+All three data frames are pretty similar. They all have 3 rows with 5 columns and the data is exactly the same. The biggest difference that probably stands out is the column names, which I forgot to capitalize when I was creating the xml and json files. I changed the column names below and checked to see if they are identical.
+
+```{r}
+colnames(df_xml) <- colnames(df_html)
+colnames(df_json) <- colnames(df_html)
+identical(df_html,df_xml)
+identical(df_html,df_json)
+identical(df_xml,df_json)
+```
+
+It looks like the data frames from the xml and json files are identical. However, the data frame from the HTML seem to differ from the other two data frames. I used the all.equal() function to see if I could identify the difference and it looks like it is just a minor string mismatch.
+
+```{r}
+all.equal(df_html,df_xml)
+all.equal(df_html,df_json)
+```
