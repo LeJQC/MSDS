@@ -1,20 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<books>
-	<book1>
+<catalog>
+	<book id="bk101">
+		
 		<title>Data Science for Business</title>
 		<authors>Foster Provost</authors>
 		<authors2>Tom Fawcett</authors2>
 		<interesting_attributes>Conversational style make it an easy read.</interesting_attributes>
 		<interesting_attributes2>Cover a wide range of topics</interesting_attributes2>
-	</book1>
-	<book2>
+	</book>
+	<book id="bk102">
 		<title>Data Science for Data Science</title>
 		<authors>Hadley Wickham</authors>
 		<authors2>Garret Grolemund</authors2>
 		<interesting_attributes>Provides step by step instructions and code examples</interesting_attributes>
 		<interesting_attributes2>Covers a wide range of R packages</interesting_attributes2>
-	</book2>
-	<book3>
+	</book2
+	<book id="bk103">
 		<title>Python for Data Analysis</title>
 		<authors>Wes McKinney</authors>
 		<authors2>N/A</authors2>
