@@ -1,0 +1,52 @@
+---
+title: "Week 9 Assignment"
+author: "Jian Quan Chen"
+date: "2023-03-26"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+For this week's assignment, I had to choose one of the New York Times APIs and transform it into a R data frame. I decided to go with the API that provides the most popular/viewed articles for the last seven days. 
+
+# Importing the libraries
+```{r, message=FALSE, warning=FALSE}
+library(httr)
+library(jsonlite)
+library(tidyverse)
+```
+
+# Getting the url and keys
+```{r}
+nyt_url <- "https://api.nytimes.com/svc/mostpopular/v2/viewed/1.json?api-key="
+
+api_key <- "mzhmTbbWUMXoIJzATs62x7LzpyAQ5EA9"
+
+full_url <- base::paste0(nyt_url,api_key)
+full_url
+```
+# Calling the API and checking the response
+```{r}
+api_call <- httr::GET(full_url)
+
+api_call$status_code
+```
+# Converting the response to a data frame
+```{r}
+api_char <- rawToChar(api_call$content)
+
+api_JSON <- fromJSON(api_char, flatten = TRUE)
+
+df <- data.frame(api_JSON)
+glimpse(df)
+```
+# Creating a data frame of the columns I need
+```{r}
+popular_articles <- df %>% 
+  select(results.published_date,results.title, results.section)
+
+colnames(popular_articles) <- c("Published Date","Popular Articles","Section")  
+
+knitr:: kable(popular_articles)
+```
+
