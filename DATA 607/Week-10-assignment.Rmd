@@ -1,0 +1,175 @@
+---
+title: "Week 10 assignment- Sentiment Analysis"
+author: "Jian Quan Chen"
+date: "2023-04-02"
+output:
+  html_document: default
+  pdf_document: default
+---
+For this assignment, I pulled the book "The Odyssey" from the gutenbergr package and performed sentiment analysis on its contents. The book is translated from Greek poems written by Homer in the 8th century BC. It follows the story of Odysseus, king of Ithaca, as he journeys home to his wife after the Trojan War. When I read this book in high school, I remember it was a tragedy as Odysseus lost most of his men on the way home and his wife grieving as she had believed Odysseus had died during the war. So, I would expect to see a more negative sentiment throughout the book. 
+
+The first part of this Rmarkdown is code from chapter 2 of Text Mining with R by David Robinson and Julia Silge. The primary example code analyzes the sentiment of books by Jane Austen. It also compares the three sentiment dictionaries across the book "Pride and Prejudice". The section following this example will be a sentiment analysis of "The Odyssey". For the additional sentiment lexicon, I decided to go with the "loughran" lexicon. This lexicon was developed as a tool for financial sentiment analysis. It will be interesting to compare how similar this finance lexicon is to the other 3 lexicons. 
+
+# Loading the libraries and Sentiments
+```{r,message=FALSE, warning=FALSE}
+library(textdata)
+library(tidytext)
+library(tidyverse)
+library(janeaustenr)
+library(gutenbergr)
+get_sentiments("bing")
+get_sentiments("nrc")
+get_sentiments("afinn")
+```
+
+# Example code from Text Mining With R, Chapter 2
+
+## Sentiment Analysis of the books by Jane Austen
+```{r, warning=FALSE}
+tidy_books <- austen_books() %>%
+  group_by(book) %>%
+  mutate(
+    linenumber = row_number(),
+    chapter = cumsum(str_detect(text, 
+                                regex("^chapter [\\divxlc]", 
+                                      ignore_case = TRUE)))) %>%
+  ungroup() %>%
+  unnest_tokens(word, text)
+
+jane_austen_sentiment <- tidy_books %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(book, index = linenumber %/% 80, sentiment) %>%
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>% 
+  mutate(sentiment = positive - negative)
+
+ggplot(jane_austen_sentiment, aes(index, sentiment, fill = book)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~book, ncol = 2, scales = "free_x")
+```
+
+## Comparing the three Sentiment Analysis lexicons on "Pride and Prejudice"
+
+```{r}
+pride_prejudice <- tidy_books %>% 
+  filter(book == "Pride & Prejudice")
+
+afinn <- pride_prejudice %>% 
+  inner_join(get_sentiments("afinn")) %>% 
+  group_by(index = linenumber %/% 80) %>% 
+  summarise(sentiment = sum(value)) %>% 
+  mutate(method = "AFINN")
+
+bing_and_nrc <- bind_rows(
+  pride_prejudice %>% 
+    inner_join(get_sentiments("bing")) %>%
+    mutate(method = "Bing et al."),
+  pride_prejudice %>% 
+    inner_join(get_sentiments("nrc") %>% 
+                 filter(sentiment %in% c("positive", 
+                                         "negative"))
+    ) %>%
+    mutate(method = "NRC")) %>%
+  count(method, index = linenumber %/% 80, sentiment) %>%
+  pivot_wider(names_from = sentiment,
+              values_from = n,
+              values_fill = 0) %>% 
+  mutate(sentiment = positive - negative)
+
+bind_rows(afinn, 
+          bing_and_nrc) %>%
+  ggplot(aes(index, sentiment, fill = method)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~method, ncol = 1, scales = "free_y")
+```
+
+# The Odyssey Sentiment Analysis
+
+```{r setup}
+#Grabbing the book from the gutenberg package
+the_odyssey <- gutenberg_download(3160)
+head(the_odyssey,10)
+```
+
+```{r}
+#Creating a data frame with line numbers and tokens
+tidy_odyssey <- the_odyssey %>%
+  mutate(linenumber = row_number()) %>% 
+  unnest_tokens(word,text) #%>% 
+  #anti_join(stop_words)
+
+head(tidy_odyssey,10)
+```
+
+```{r}
+#Comparing the sentiment analysis dictionaries
+afinn <- tidy_odyssey %>% 
+  inner_join(get_sentiments("afinn")) %>% 
+  group_by(index = linenumber %/% 80) %>% 
+  summarise(sentiment = sum(value)) %>% 
+  mutate(method = "AFINN")
+
+bing_and_nrc <- bind_rows(
+  tidy_odyssey %>% 
+    inner_join(get_sentiments("bing")) %>%
+    mutate(method = "Bing et al."),
+  tidy_odyssey %>% 
+    inner_join(get_sentiments("nrc") %>% 
+                 filter(sentiment %in% c("positive", 
+                                         "negative"))
+    ) %>%
+    mutate(method = "NRC")) %>%
+  count(method, index = linenumber %/% 80, sentiment) %>%
+  pivot_wider(names_from = sentiment,
+              values_from = n,
+              values_fill = 0) %>% 
+  mutate(sentiment = positive - negative)
+
+bind_rows(afinn, 
+          bing_and_nrc) %>%
+  ggplot(aes(index, sentiment, fill = method)) +
+  geom_col(show.legend = FALSE) +
+  facet_wrap(~method, ncol = 1, scales = "free_y")
+```
+
+```{r, warning=FALSE}
+#The NRC plot seems to have less negative sentiment than the other 2 plots
+tidy_odyssey %>% 
+  inner_join(get_sentiments("nrc")) %>% 
+  count(sentiment) %>% 
+  arrange(desc(n))
+```
+
+## Using the loughran lexicon
+```{r}
+tidy_odyssey %>% 
+  inner_join(get_sentiments("loughran")) %>% 
+  count(sentiment) %>% 
+  arrange(desc(n))
+
+#There seems to be a lot of tokens missing
+```
+
+```{r}
+# Plotting the sentiment
+plot_odyssey <- tidy_odyssey %>% 
+    inner_join(get_sentiments("loughran") %>% 
+                 filter(sentiment %in% c("positive", 
+                                         "negative"))
+    ) %>%
+    mutate(method = "Loughran") %>%
+  count(method, index = linenumber %/% 80, sentiment) %>%
+  pivot_wider(names_from = sentiment,
+              values_from = n,
+              values_fill = 0) %>% 
+  mutate(sentiment = positive - negative) 
+
+plot_odyssey %>% 
+  ggplot(aes(index, sentiment, fill = method)) +
+  geom_col(show.legend = FALSE)
+```
+
+# Conclusion
+
+In the story, Odysseus is trying to return home to his wife but there are challenges along the way. I was expecting the sentiments to be mostly negative throughout the story, similar to the sentiment plot in "Bing et al". In the "AFINN" method, I can understand the general positive sentiment as it looks at the sum of the sentiment and some words carry higher ratings than others. However, in the "NRC" method, I was expecting to see a plot similar to that of "Bing et al" but it did not account for other words with a negative sentiment such as fear, anger, sadness, and disgust.
+
+From the sentiment analysis of using the "loughran" lexicon, there were a lot of words that were not given a sentiment. There was almost double the amount of tokens with negative sentiment than positive. Although the plot differs from the plot of the other three lexicons, it was what I had expected from my experience reading the book. However, I might hold some bias as the book was extremely hard to understand due to it being written as one very long poem. 
