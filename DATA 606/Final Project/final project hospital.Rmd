@@ -1,0 +1,133 @@
+---
+title: "DATA 606 Final Project Proposal"
+author: "Jian Quan Chen"
+date: "2023-04-06"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+### Data Preparation
+
+```{r setup, echo=TRUE, results='hide', warning=FALSE, message=FALSE}
+library(tidyverse)
+library(psych)
+```
+
+```{r}
+hospital_df_raw <- read.csv("https://raw.githubusercontent.com/LeJQC/MSDS/main/DATA%20606/Final%20Project/Hospital_General_Information.csv")
+income_df_raw <- read.csv("https://raw.githubusercontent.com/LeJQC/MSDS/main/DATA%20606/Final%20Project/Income%20data.csv")
+```
+
+```{r}
+# Tidying the hospital data frame. The only columns I need are facility name, city, state, zipcode, hospital overall rating
+hospital_df <- hospital_df_raw %>% 
+  select("Facility.Name","City", "State", "ZIP.Code", "Hospital.overall.rating")
+
+colnames(hospital_df) <- c("HospitalName", "City", "State", "ZipCode", "HospitalRating")
+
+# Tidying the income data frame. Looking to make a data frame with 2 columns: zip code and median income
+income_df <- income_df_raw %>% 
+  select("NAME","S1901_C01_012E") 
+
+income_df <- income_df[-1,]  
+income_df$NAME <- as.numeric(substr(income_df$NAME, nchar(income_df$NAME) - 4, nchar(income_df$NAME)))
+income_df$S1901_C01_012E <- as.numeric(income_df$S1901_C01_012E)
+colnames(income_df) <- c("ZipCode", "Income")
+
+# Merging both the hospital and income data frames together
+merged_df <- merge(income_df, hospital_df, by ="ZipCode")
+ratings_df <- merged_df %>% 
+  select(c("HospitalName","City","State","ZipCode","Income","HospitalRating")) %>% 
+  filter(merged_df$HospitalRating != "Not Available") %>% 
+  group_by(HospitalRating) %>% 
+  filter(Income >= 0)
+
+```
+
+
+### Research question 
+
+**You should phrase your research question in a way that matches up with the scope of inference your dataset allows for.**
+
+Based on zip code, is there a correlation between hospital rating and income?
+
+### Cases 
+
+**What are the cases, and how many are there?**
+
+Each case is a zip code that contains a hospital rating and income. There are 2956 cases. 
+
+### Data collection 
+
+**Describe the method of data collection.**
+
+The hospital data was collected from the Centers for Medicare & Medicaid Services (CMS) website (https://data.cms.gov/provider-data/dataset/xubh-q36u), which was released on January 2023. Only data from Medicare-certified hospitals were included. The Overall Hospital Quality Star Rating (scale 1-5) is an average of a hospital's score for the following measure group: "Mortality", "Safety", "Readmission", "Patient Experience", and Timely & Effective Care".
+
+The 2020 median income data was collected from the Internal Revenue Service (IRS) website (https://www.irs.gov/statistics/soi-tax-stats-individual-income-tax-statistics-2020-zip-code-data-soi). Their data is gathered from individual tax returns filed every year.
+
+
+### Type of study 
+
+**What type of study is this (observational/experiment)?**
+
+This is an observational study. 
+
+### Data Source 
+
+**If you collected the data, state self-collected. If not, provide a citation/link.**
+
+The hospital data was collected from the CMS website (https://data.cms.gov/provider-data/dataset/xubh-q36u). It was extracted to a csv file and pushed to my Github. 
+
+The income data was collected from the IRS website (https://www.irs.gov/statistics/soi-tax-stats-individual-income-tax-statistics-2020-zip-code-data-soi). Again, it was extracted to a csv file and pushed to my Github.
+
+- Centers for Medicare & Medicaid Services. (n.d.). Provider Data Catalog. Retrieved [4/5/23], from https://data.cms.gov/provider-data/
+- Internal Revenue Service. (2022). SOI Tax Stats - Individual Income Tax Statistics - 2020 ZIP Code Data (SOI). Retrieved April 6, 2023, from https://www.irs.gov/statistics/soi-tax-stats-individual-income-tax-statistics-2020-zip-code-data-soi
+
+### Dependent Variable
+
+**What is the response variable? Is it quantitative or qualitative?**
+
+The response variable is the hospital's rating, which is a categorical variable measure from 1 to 5. It is qualitative.
+
+
+### Independent Variable(s)
+
+The independent variable is median income and it is quantitative. 
+
+
+### Relevant summary statistics 
+
+**Provide summary statistics for each the variables. Also include appropriate visualizations related to your research question (e.g. scatter plot, boxplots, etc). This step requires the use of R, hence a code chunk is provided below. Insert more code chunks as needed.**
+
+```{r}
+#Summary statistic of the independent variable 
+summary(ratings_df$Income)
+```
+
+```{r}
+describeBy(ratings_df$Income, group = ratings_df$HospitalRating, mat = TRUE)
+```
+
+```{r}
+ratings_df %>% 
+  ggplot(aes(x=Income)) +
+  geom_histogram(bins = 100)
+```
+
+
+```{r}
+ratings_df %>% 
+  ggplot(aes(x = Income, y= HospitalRating))+
+  geom_boxplot()
+```
+
+
+```{r} 
+#Hospital Rating and mean income
+ratings_df$Income <- as.numeric(ratings_df$Income)
+ratings_df %>% 
+  summarise(mean_income = mean(Income))
+```
+
+
