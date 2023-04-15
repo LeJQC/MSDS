@@ -1,0 +1,36 @@
+---
+title: "TidyVerse CREATE Assignment"
+author: "Jian Quan Chen"
+date: "2023-03-27"
+output: html_document
+---
+
+In this assignment, you'll practice collaborating around a code project with GitHub. You could consider our collective work as building out a book of examples on how to use TidyVerse functions.
+
+GitHub repository: <https://github.com/acatlin/SPRING2023TIDYVERSE>
+
+FiveThirtyEight.com datasets.
+
+Kaggle datasets.
+
+Your task here is to Create an Example. Using one or more TidyVerse packages, and any dataset from fivethirtyeight.com or Kaggle, create a programming sample "vignette" that demonstrates how to use one or more of the capabilities of the selected TidyVerse package with your selected dataset. (25 points)
+
+Later, you'll be asked to extend an existing vignette. Using one of your classmate's examples (as created above), you'll then extend his or her example with additional annotated code. (15 points)
+
+You should clone the provided repository. Once you have code to submit, you should make a pull request on the shared repository. You should also update the README.md file with your example.
+
+After you've created your vignette, please submit your GitHub handle name in the submission link provided below. This will let your instructor know that your work is ready to be peer-graded.
+
+You should complete your submission on the schedule stated in the course syllabus.
+
+# Introduction
+
+For this assignment, I will be creating a programming sample vignette to demonstrate the use of the `tidyr` package in the tidyverse package. The data set I will be working with is:
+
+The tidyr package provides a set of functions that help tidy the data. Ideally, in a tidy data set, each column should correspond to a single variable while each row should represent a single observation and each cell contains a single value. Tidying data is an important step in the data wrangling process and can help in analyzing and visualizing data. 
+
+Say we want to lkjkladf this dataset, it would be difficult bc the data is in wide format. however..... In this example, I will reshape the data in the ___ data set, using the `pivot_longer` function. Currently, the data set is asdfljadsklfj. using the pivot logner function to reshape the data and create new columns where each row is a ___. We can use filter, summarize, group_by, ggplot to analyze the data in this format. Now, say we want to revert the data frame back to it's original form bc it is visually easier to understand, we can convert the data frame back to wide format using pivot_wider
+
+Sometimes, data is presented in multiple tables and will need to be joined for analysis.
+
+`pivot_longer`, `pivot_wider`
