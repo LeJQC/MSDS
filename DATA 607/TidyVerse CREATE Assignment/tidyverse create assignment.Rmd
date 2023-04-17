@@ -2,35 +2,109 @@
 title: "TidyVerse CREATE Assignment"
 author: "Jian Quan Chen"
 date: "2023-03-27"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
-
-In this assignment, you'll practice collaborating around a code project with GitHub. You could consider our collective work as building out a book of examples on how to use TidyVerse functions.
-
-GitHub repository: <https://github.com/acatlin/SPRING2023TIDYVERSE>
-
-FiveThirtyEight.com datasets.
-
-Kaggle datasets.
-
-Your task here is to Create an Example. Using one or more TidyVerse packages, and any dataset from fivethirtyeight.com or Kaggle, create a programming sample "vignette" that demonstrates how to use one or more of the capabilities of the selected TidyVerse package with your selected dataset. (25 points)
-
-Later, you'll be asked to extend an existing vignette. Using one of your classmate's examples (as created above), you'll then extend his or her example with additional annotated code. (15 points)
-
-You should clone the provided repository. Once you have code to submit, you should make a pull request on the shared repository. You should also update the README.md file with your example.
-
-After you've created your vignette, please submit your GitHub handle name in the submission link provided below. This will let your instructor know that your work is ready to be peer-graded.
-
-You should complete your submission on the schedule stated in the course syllabus.
 
 # Introduction
 
-For this assignment, I will be creating a programming sample vignette to demonstrate the use of the `tidyr` package in the tidyverse package. The data set I will be working with is:
+For this assignment, I will be creating a programming sample vignette to demonstrate the use of the `tidyr` package in the tidyverse package. I will be working with the "Video Game Sales" (<https://www.kaggle.com/datasets/gregorut/videogamesales>) dataset from Kaggle. The dataset was generated from a scrape of vgchartz.com and contains the sales of video games that sold greater than 100,000 copies from 1980 to 2020.
 
-The tidyr package provides a set of functions that help tidy the data. Ideally, in a tidy data set, each column should correspond to a single variable while each row should represent a single observation and each cell contains a single value. Tidying data is an important step in the data wrangling process and can help in analyzing and visualizing data. 
+The `tidyr` package provides a set of functions that help tidy data, an important step in the data wrangling process. Ideally, in a tidy data set, each column should correspond to a single variable, each row should represent a single observation, and each cell should contains a single value.
 
-Say we want to lkjkladf this dataset, it would be difficult bc the data is in wide format. however..... In this example, I will reshape the data in the ___ data set, using the `pivot_longer` function. Currently, the data set is asdfljadsklfj. using the pivot logner function to reshape the data and create new columns where each row is a ___. We can use filter, summarize, group_by, ggplot to analyze the data in this format. Now, say we want to revert the data frame back to it's original form bc it is visually easier to understand, we can convert the data frame back to wide format using pivot_wider
+In the "Video Game Sales" dataset, the sales (in millions) are presented in a wide format in which the sales of countries are split into multiple columns. In order to tidy this data, I will be using the `pivot_longer` function from the `tidyr` package to reshape these columns into one single column. Then, analyze the data to identify which region and genre had the most video game sales.
 
-Sometimes, data is presented in multiple tables and will need to be joined for analysis.
+# Code
 
-`pivot_longer`, `pivot_wider`
+## Importing Library
+
+```{r message=FALSE}
+library(tidyverse)
+```
+
+## Importing the Dataset
+
+```{r}
+video_games_df <- read.csv("https://raw.githubusercontent.com/LeJQC/MSDS/main/DATA%20607/TidyVerse%20CREATE%20Assignment/vgsales.csv")
+glimpse(video_games_df)
+```
+
+## Reshaping Data Frame to Long Format
+
+The sales from each region can be combined into one single column using `pivot_longer`. This function takes several arguments including:
+
+-   `data` : wide-format data frame to pivot
+-   `cols`: columns in the data frame that you want to pivot
+-   `names_to`: name of the column that is being created
+-   `values_to`: name of the column where the cell values are stored
+
+There are more arguments to further manipulate the data frame but these are the most essential.
+
+```{r}
+sales_df <- video_games_df %>% 
+  pivot_longer(
+    cols = NA_Sales:Other_Sales,
+    names_to = "Region",
+    names_pattern = "(.*)_[A-Za-z]*", 
+    values_to = "Sales"
+  )
+glimpse(sales_df)
+```
+
+## Analyzing the Sales Data
+
+### Sum of Sales by Region
+
+```{r}
+sales_df %>% 
+  group_by(Region) %>% 
+  summarize(total_sales = sum(Sales)) %>% 
+  arrange(desc(total_sales))
+```
+
+### Plotting Sales by Region
+
+```{r}
+sales_df %>% 
+  ggplot(aes(x=Region, y= Sales))+
+  geom_bar(stat = "identity")
+```
+
+### Most Popular Genres
+
+```{r}
+sales_df %>% 
+  group_by(Genre) %>% 
+  summarise(count = n()) %>% 
+  mutate(percent = round(count/sum(count)*100)) %>% 
+  arrange(desc(count))
+```
+
+### Sales by Genre
+
+```{r}
+sales_df %>% 
+  group_by(Genre) %>% 
+  ggplot((aes(x = Genre,y = Sales)))+
+  geom_bar(stat = "identity")+
+  coord_flip()
+```
+
+## Reshaping Data Frame back to Wide Format
+
+Sometimes, the wide format of a dataset presents a better visualization of the data, which can make it easier to understand. For that, there is a `pivot_wider` function. This function is the inverse of `pivot_longer` and converts one column into multiple columns.
+
+```{r}
+# Has the same amount of variables and observations as the starting data frame
+sales_wide <- sales_df %>% 
+  pivot_wider(
+    names_from = "Region",
+    values_from = "Sales")
+glimpse(sales_wide)
+glimpse(video_games_df)
+```
+
+# Conclusion
+
+By pivoting the sales columns to a long format, I was able to easily analyze which region and which genre had the most sales. North America has more video game sales compared to Europe, Japan, and other countries. As for genre, action and sports games were the most popular games sold.
