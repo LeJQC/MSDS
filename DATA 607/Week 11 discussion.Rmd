@@ -1,0 +1,27 @@
+---
+title: "Week 11 Discussion"
+author: "Jian Quan Chen"
+date: "2023-04-19"
+output: html_document
+---
+
+# Week 11 Discussion: Recommender Systems
+Your task is to analyze an existing recommender system that you find interesting.  You should:
+
+1. Perform a Scenario Design analysis as described below.  Consider whether it makes sense for your selected recommender system to perform scenario design twice, once for the organization (e.g. Amazon.com) and once for the organization's customers.
+
+2. Attempt to reverse engineer what you can about the site, from the site interface and any available information that you can find on the Internet or elsewhere.
+
+3.Include specific recommendations about how to improve the site's recommendation capabilities going forward. 
+
+4. Create your report using an R Markdown file, and create a discussion thread with a link to the GitHub repo where your Markdown file notebook resides.  You are not expected to need to write code for this discussion assignment.
+
+# Scenario Design
+UberEats is a food delivery service that uses recommender systems to suggestion food options based on location and history. UberEats's target users are people who want to order food from restaurants without having to leave their home or office. In addition to increasing their user base and market share, their goal is to provide convenient food delivery service to its customers. One way data science can help UberEats accomplish these goals is to help expand in to new areas. Data science can also improve their recommendation algorithm, provide more accurate delivery times/routes and help optimize their pricing and promotions. It would make sense for UberEats to perform scenario design analysis twice. Their business model revolves around customers and their recommendation system. I can also filter the restaurant list based on what I currently want. There is also an option for the top rated restuarants in the area. 
+
+# Reverse Engineer 
+When the UberEats app is first opened, the first thing that pops up are any promotions they are currently running. Also, there are suggestions on restaurants based on distance and what is currently open. There is a search bar at the top that allows users to search for restaurants and foods by keyword or location. If the user is not sure what they want, there are restaurant suggestions with pictures of the food, ratings, special offers, and estimated delivery times. Based on my recommendations, their algorithn seem to incorpate restaurants I've used in the past and the distance to where I am. Once the restaurant is picked, the menu is shown. It is like a catalog, the name of the item is in bold with a tiny description next to it and then the price. Once everything is selected and added to the cart, the delivery time is given. It can be scheduled for a later time. Then there is a payment option and an option to tip the driver. Once the delivery driver is on route, there are ways to call and message him.  
+
+# Recommendations to Improve App
+One recommendation to imrpove the Ubereats app is to optimize their restaurant recommendations. One way to do this is to add a dislike or hide button to resturants I have tried before. The list of restaurant recommendations has a lot restaurants I have already tried and do not want to try again but they are at the top of the list. Another way they can improve their app is to have reviews as well as the ratings. It is hard to guage whether the food is worth the price based on just the ratings. 
+
